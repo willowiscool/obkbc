@@ -61,19 +61,30 @@ func addComb(comb Keybinding) {
 		keybind  = keyboard["keybind"].([]interface{})
 	)
 	keyboard["keybind"] = append(keybind, translated)
-	result, err := data.XmlIndent("", "	")
+	writeRC(data)
+}
+
+func deleteComb(comb Keybinding) {
+	data, err := readRC()
 	if err != nil {
-		log.Fatal("Problem re-writing XML: " + err.Error())
+		log.Fatal("Problem reading rc.xml: " + err.Error())
 	}
-	result = []byte(strings.Replace(string(result), "&", "&amp;", -1))
-	err = ioutil.WriteFile(os.Getenv("HOME") + "/.config/openbox/rc.xml", result, 0644)
-	if err != nil {
-		log.Fatal("Problem re-writing XML: " + err.Error())
+	var (
+		config   = data["openbox_config"].(map[string]interface{})
+		keyboard = config["keyboard"].(map[string]interface{})
+		keybind  = keyboard["keybind"].([]interface{})
+	)
+	for i, inspect := range keybind {
+		switch inspect.(map[string]interface{})["action"].(type) {
+			case map[string]interface{}:
+				if inspect.(map[string]interface{})["-key"].(string) == comb.key && inspect.(map[string]interface{})["action"].(map[string]interface{})["command"].(string) == comb.command {
+					keyboard["keybind"] = append(keybind[:i], keybind[i+1:]...)
+				}
+			default:
+				continue
+		}
 	}
-	err = exec.Command("openbox --reconfigure").Run()
-	if err != nil {
-		log.Fatal("Problem reconfiguring OpenBox: " + err.Error())
-	}
+	writeRC(data)
 }
 
 func readRC() (mxj.Map, error) {
@@ -86,4 +97,20 @@ func readRC() (mxj.Map, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func writeRC(data mxj.Map) {
+	result, err := data.XmlIndent("", "	")
+	if err != nil {
+		log.Fatal("Problem re-writing XML: " + err.Error())
+	}
+	result = []byte(strings.Replace(string(result), "&", "&amp;", -1))
+	err = ioutil.WriteFile(os.Getenv("HOME") + "/.config/openbox/rc.xml", result, 0644)
+	if err != nil {
+		log.Fatal("Problem re-writing XML: " + err.Error())
+	}
+	err = exec.Command("openbox", "--reconfigure").Run()
+	if err != nil {
+		log.Fatal("Problem reconfiguring OpenBox: " + err.Error())
+	}
 }

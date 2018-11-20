@@ -34,6 +34,20 @@ func main() {
 			app.Stop()
 		}
 	}).SetSelectedFunc(func(row, col int) {
+		switch col {
+			case 3:
+				modal := tview.NewModal().
+					SetText("Are you sure you want to delete the combination for " + combs[row-1].key + "?").
+					AddButtons([]string{"Yes", "Cancel"}).
+					SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+						if (buttonLabel == "Yes") {
+							deleteComb(combs[row-1])
+							table.RemoveRow(row)
+						}
+						app.SetRoot(pages, true).SetFocus(pages)
+					})
+				app.SetRoot(modal, false).SetFocus(modal)
+		}
 	}).SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 'a' {
 			pages.SwitchToPage("add")
