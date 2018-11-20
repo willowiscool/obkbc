@@ -6,6 +6,10 @@ import (
 	"github.com/gdamore/tcell"
 )
 
+var (
+	combs = readCombs()
+)
+
 func main() {
 	app := tview.NewApplication()
 	table := tview.NewTable().SetBorders(true)
@@ -52,6 +56,24 @@ func main() {
 		AddFormItem(combInput).
 		AddFormItem(commandInput).
 		AddButton("Add", func() {
+			for _, comb := range combs {
+				if comb.key == combInput.GetText() {
+					modal := tview.NewModal().
+						SetText("A combination for that key already exists!").
+						AddButtons([]string{"ok"}).
+						SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+							app.SetRoot(pages, true).SetFocus(pages)
+						})
+					app.SetRoot(modal, false).SetFocus(modal)
+					return
+				}
+			}
+			addComb(Keybinding{
+				key: combInput.GetText(),
+				command: commandInput.GetText(),
+			})
+			combs = readCombs()
+			addCombs(table)
 			combInput.SetText("")
 			commandInput.SetText("")
 			pages.SwitchToPage("combs")
@@ -78,7 +100,6 @@ func addHeader(table *tview.Table, col int, name string) {
 }
 
 func addCombs(table *tview.Table) {
-	combs := readCombs()
 	for i, comb := range combs {
 		table.SetCell(i+1, 0, tview.NewTableCell(comb.key).
 			SetSelectable(false))

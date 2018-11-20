@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"log"
 	"strings"
 	"github.com/clbanning/mxj"
@@ -68,6 +69,10 @@ func addComb(comb Keybinding) {
 	err = ioutil.WriteFile(os.Getenv("HOME") + "/.config/openbox/rc.xml", result, 0644)
 	if err != nil {
 		log.Fatal("Problem re-writing XML: " + err.Error())
+	}
+	err = exec.Command("openbox --reconfigure").Run()
+	if err != nil {
+		log.Fatal("Problem reconfiguring OpenBox: " + err.Error())
 	}
 }
 
