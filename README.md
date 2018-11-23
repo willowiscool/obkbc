@@ -4,16 +4,11 @@ A Terminal User Interface for managing keyboard combinations of the OpenBox wind
 
 ## Installation
 
-Get the repo and use go build or go install:
+You can download a [release](https://github.com/vityavv/obkbc/releases), or to build it from source, run
 
 ```
-$ git clone https://github.com/vityavv/obkbc
-$ cd obkbc
-$ go build
-$ obkbc
+$ go get -u github.com/vityavv/obkbc
 ```
-
-Alternatively, you can download a [release](https://github.com/vityavv/obkbc/releases).
 
 ## Useage
 
