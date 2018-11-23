@@ -63,7 +63,7 @@ func addComb(comb Keybinding) {
 	keyboard["keybind"] = append(keybind, translated)
 	writeRC(data)
 }
-
+//TODO: FIX THIS MESS
 func deleteComb(comb Keybinding) {
 	data, err := readRC()
 	if err != nil {
@@ -75,10 +75,40 @@ func deleteComb(comb Keybinding) {
 		keybind  = keyboard["keybind"].([]interface{})
 	)
 	for i, inspect := range keybind {
+		//TODO: Fix this messs
 		switch inspect.(map[string]interface{})["action"].(type) {
 			case map[string]interface{}:
 				if inspect.(map[string]interface{})["-key"].(string) == comb.key && inspect.(map[string]interface{})["action"].(map[string]interface{})["command"].(string) == comb.command {
 					keyboard["keybind"] = append(keybind[:i], keybind[i+1:]...)
+				}
+			default:
+				continue
+		}
+	}
+	writeRC(data)
+}
+//TODO: FIX THIS MESS
+func editComb(oldComb, comb Keybinding) {
+	data, err := readRC()
+	if err != nil {
+		log.Fatal("Problem reading rc.xml: " + err.Error())
+	}
+	keybinds := data[
+		"openbox_config"].(map[string]interface{})[
+		"keyboard"].(map[string]interface{})[
+		"keybind"].([]interface{})
+	for i, inspect := range keybinds {
+		//TODO: Fix this messs
+		switch inspect.(map[string]interface{})["action"].(type) {
+			case map[string]interface{}:
+				if inspect.(map[string]interface{})["-key"].(string) == oldComb.key && inspect.(map[string]interface{})["action"].(map[string]interface{})["command"].(string) == oldComb.command {
+					keybinds[i] = map[string]interface{}{
+						"action": map[string]string{
+							"-name": "Execute",
+							"command": comb.command,
+						},
+						"-key": comb.key,
+					}
 				}
 			default:
 				continue
