@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	combs, err := readCombs()
+	combs, _, err := readCombs()
 	if err != nil {
 		log.Fatal("Problem reading keyboard combinations: " + err.Error())
 	}
@@ -49,12 +49,12 @@ func main() {
 					return
 				}
 			}
-			addComb(Keybinding{
+			addComb(Kcommand{
 				key: combInput.GetText(),
 				command: commandInput.GetText(),
 			})
 			// Update list of keyboard combinations, and then reset form and go back
-			combs = append(combs, Keybinding{
+			combs = append(combs, Kcommand{
 				key: combInput.GetText(),
 				command: commandInput.GetText(),
 			})
@@ -106,12 +106,12 @@ func main() {
 					SetText(combs[row-1].command)
 				// Set the function to edit that *specific* combination
 				editForm.GetButton(0).SetSelectedFunc(func() {
-					editComb(combs[row-1], Keybinding{
+					editComb(combs[row-1], Kcommand{
 						key: combs[row-1].key,
 						command: editCommandInput.GetText(),
 					})
 					// Once again reset the combinations.
-					combs[row-1] = Keybinding{
+					combs[row-1] = Kcommand{
 						key: combs[row-1].key,
 						command: editCommandInput.GetText(),
 					}
@@ -164,7 +164,7 @@ func addHeader(table *tview.Table, col int, name string) {
 }
 
 // addCombs adds the keyboard combination using the combs given
-func addCombs(table *tview.Table, combs []Keybinding) {
+func addCombs(table *tview.Table, combs []Kcommand) {
 	for i, comb := range combs {
 		table.SetCell(i+1, 0, tview.NewTableCell(comb.key).
 			SetSelectable(false))
