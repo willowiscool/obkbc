@@ -49,7 +49,7 @@ func main() {
 					return
 				}
 			}
-			addComb(Kcommand{
+			addKcommand(Kcommand{
 				key: combInput.GetText(),
 				command: commandInput.GetText(),
 			})

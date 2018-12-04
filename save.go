@@ -69,27 +69,52 @@ func readCombs() ([]Kcommand, []Kmrt, error) {
 
 // addComb adds a combination to the config and reloads openbox to use it
 // After using readRC to get the raw data, it translates the keybinding given to it into a map[string]interface{} which it inserts into the data and then writes back using writeRC.
-func addComb(comb Kcommand) error {
-	data, err := readRC()
-	if err != nil {
-		return err
+func makeAddComb(fn func(interface{}) interface{}) func (interface{}) error {
+	return func(comb interface{}) error {
+		data, err := readRC()
+		if err != nil {
+			return err
+		}
+		var (
+			config   = data["openbox_config"].(map[string]interface{})
+			keyboard = config["keyboard"].(map[string]interface{})
+			keybind  = keyboard["keybind"].([]interface{})
+		)
+		translated := fn(comb)
+		keyboard["keybind"] = append(keybind, translated)
+		return writeRC(data)
 	}
-	translated := map[string]interface{}{
-		"action": map[string]string{
-			"-name": "Execute",
-			"command": comb.command,
-		},
-		"-key": comb.key,
-	}
-	//Thanks to Kale Blankenship from the golang slack for this solution!!!!!!!!
-	var (
-		config   = data["openbox_config"].(map[string]interface{})
-		keyboard = config["keyboard"].(map[string]interface{})
-		keybind  = keyboard["keybind"].([]interface{})
-	)
-	keyboard["keybind"] = append(keybind, translated)
-	return writeRC(data)
 }
+var (
+	addKcommand = makeAddComb(func (comb interface{}) interface{} {
+		command := comb.(Kcommand)
+		return map[string]interface{}{
+			"action": map[string]string{
+				"-name": "Execute",
+				"command": command.command,
+			},
+			"-key": command.key,
+		}
+	})
+	addKmrt = makeAddComb(func (comb interface{}) interface{} {
+		kmrt := comb.(Kmrt)
+		return map[string]interface{}{
+			"action": []map[string]interface{}{
+				{
+					"-name": "Unmaximize",
+				},
+				{
+					"-name": "MoveResizeTo",
+					"height": kmrt.height,
+					"width": kmrt.width,
+					"x": kmrt.x,
+					"y": kmrt.y,
+				},
+			},
+			"-key": kmrt.key,
+		}
+	})
+)
 
 // deleteComb deletes a combination and reloads openbox to reflect that
 // After reading the data with readRC, it finds the combinatoin it needs, deletes it, and uses writeRC to write the data back into the file.
