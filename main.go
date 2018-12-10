@@ -49,7 +49,7 @@ func main() {
 					return
 				}
 			}
-			addKcommand(Kcommand{
+			addComb(Kcommand{
 				key: combInput.GetText(),
 				command: commandInput.GetText(),
 			})
@@ -127,7 +127,7 @@ func main() {
 					AddButtons([]string{"Yes", "Cancel"}).
 					SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 						if (buttonLabel == "Yes") {
-							deleteComb(combs[row-1])
+							deleteComb(combs[row-1].key)
 							combs = append(combs[:row-1], combs[row:]...)
 							table.RemoveRow(row)
 						}
